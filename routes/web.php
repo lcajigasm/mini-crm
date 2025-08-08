@@ -31,6 +31,8 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:manager,admin')->group(function () {
         Route::get('/leads', [LeadsController::class, 'index'])->name('leads.index');
         Route::get('/mensajeria', [MessagingController::class, 'index'])->name('messaging.index');
+        Route::get('/mensajeria/plantillas/{template}/preview', [MessagingController::class, 'preview'])->name('messaging.preview');
+        Route::post('/mensajeria/plantillas/{template}/send', [MessagingController::class, 'send'])->name('messaging.send');
         Route::get('/informes', [ReportsController::class, 'index'])->name('reports.index');
     });
 

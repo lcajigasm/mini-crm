@@ -10,6 +10,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             PipelinesSeeder::class,
+            TemplatesSeeder::class,
             DemoSeeder::class,
         ]);
     }
