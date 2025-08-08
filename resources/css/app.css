@@ -1,0 +1,10 @@
+/* Bootstrap is imported via JS. Put project-level overrides here. */
+:root {
+  --crm-sidebar-width: 240px;
+}
+
+body { font-feature-settings: "cv11"; }
+
+@media (min-width: 992px) {
+  aside { width: var(--crm-sidebar-width); }
+}
