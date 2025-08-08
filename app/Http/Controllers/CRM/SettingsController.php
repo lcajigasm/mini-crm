@@ -6,5 +6,6 @@ use App\Http\Controllers\Controller;
 
 class SettingsController extends Controller
 {
+    public function index() { return view('crm.settings.index'); }
     public function featureFlags() { return view('crm.settings.feature-flags'); }
 }
