@@ -1,21 +1,22 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Jobs\LogTelephonyWebhook;
-use App\Jobs\ProcessWhatsAppWebhook;
-use App\Jobs\ProcessHubspotWebhook;
+use App\Jobs\ProcessInboundCallJob;
+use App\Jobs\ProcessWhatsAppWebhookJob;
+use App\Jobs\ProcessHubSpotWebhookJob;
+use Illuminate\Support\Facades\Log;
 
 Route::post('/webhooks/telephony', function () {
-    LogTelephonyWebhook::dispatch(request()->all());
+    ProcessInboundCallJob::dispatch(request()->all());
     return response()->json(['ok' => true]);
 });
 
 Route::post('/webhooks/whatsapp', function () {
-    ProcessWhatsAppWebhook::dispatch(request()->all());
+    ProcessWhatsAppWebhookJob::dispatch(request()->all());
     return response()->json(['ok' => true]);
 });
 
 Route::post('/webhooks/hubspot', function () {
-    ProcessHubspotWebhook::dispatch(request()->all());
+    ProcessHubSpotWebhookJob::dispatch(request()->all());
     return response()->json(['ok' => true]);
 });

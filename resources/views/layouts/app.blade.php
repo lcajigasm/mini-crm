@@ -15,14 +15,21 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav me-auto">
-        <li class="nav-item"><a class="nav-link" href="{{ route('appointments.index') }}">Agenda</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ route('leads.index') }}">Leads</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ route('contacts.index') }}">Clientes</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ route('messaging.index') }}">Mensajería</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ route('calls.index') }}">Llamadas</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ route('integrations.index') }}">Integraciones</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ route('settings.index') }}">Ajustes</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ route('reports.index') }}">Informes</a></li>
+        @php($user = auth()->user())
+        @if($user && $user->hasRole(['reception','manager','admin']))
+          <li class="nav-item"><a class="nav-link" href="{{ route('appointments.index') }}">Agenda</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ route('contacts.index') }}">Clientes</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ route('calls.index') }}">Llamadas</a></li>
+        @endif
+        @if($user && $user->hasRole(['manager','admin']))
+          <li class="nav-item"><a class="nav-link" href="{{ route('leads.index') }}">Leads</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ route('messaging.index') }}">Mensajería</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ route('reports.index') }}">Informes</a></li>
+        @endif
+        @if($user && $user->isAdmin())
+          <li class="nav-item"><a class="nav-link" href="{{ route('integrations.index') }}">Integraciones</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ route('settings.index') }}">Ajustes</a></li>
+        @endif
       </ul>
     </div>
   </div>
@@ -32,14 +39,21 @@
   <div class="row">
     <aside class="col-12 col-md-3 col-lg-2 bg-light border-end min-vh-100 p-3">
       <div class="list-group list-group-flush">
-        <a class="list-group-item list-group-item-action" href="{{ route('appointments.index') }}">Agenda</a>
-        <a class="list-group-item list-group-item-action" href="{{ route('leads.index') }}">Leads</a>
-        <a class="list-group-item list-group-item-action" href="{{ route('contacts.index') }}">Clientes</a>
-        <a class="list-group-item list-group-item-action" href="{{ route('messaging.index') }}">Mensajería</a>
-        <a class="list-group-item list-group-item-action" href="{{ route('calls.index') }}">Llamadas</a>
-        <a class="list-group-item list-group-item-action" href="{{ route('integrations.index') }}">Integraciones</a>
-        <a class="list-group-item list-group-item-action" href="{{ route('settings.index') }}">Ajustes</a>
-        <a class="list-group-item list-group-item-action" href="{{ route('reports.index') }}">Informes</a>
+        @php($user = auth()->user())
+        @if($user && $user->hasRole(['reception','manager','admin']))
+          <a class="list-group-item list-group-item-action" href="{{ route('appointments.index') }}">Agenda</a>
+          <a class="list-group-item list-group-item-action" href="{{ route('contacts.index') }}">Clientes</a>
+          <a class="list-group-item list-group-item-action" href="{{ route('calls.index') }}">Llamadas</a>
+        @endif
+        @if($user && $user->hasRole(['manager','admin']))
+          <a class="list-group-item list-group-item-action" href="{{ route('leads.index') }}">Leads</a>
+          <a class="list-group-item list-group-item-action" href="{{ route('messaging.index') }}">Mensajería</a>
+          <a class="list-group-item list-group-item-action" href="{{ route('reports.index') }}">Informes</a>
+        @endif
+        @if($user && $user->isAdmin())
+          <a class="list-group-item list-group-item-action" href="{{ route('integrations.index') }}">Integraciones</a>
+          <a class="list-group-item list-group-item-action" href="{{ route('settings.index') }}">Ajustes</a>
+        @endif
       </div>
     </aside>
     <main class="col p-4">

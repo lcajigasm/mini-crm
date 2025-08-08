@@ -11,4 +11,10 @@ class NullTelephonyAdapter implements TelephonyPort
     {
         Log::info('Click-to-call (noop)', ['phone' => $phoneNumber, 'context' => $context]);
     }
+
+    public function validateSignature(array $headers, string $payload): bool
+    {
+        Log::info('Telephony webhook signature validation (noop)');
+        return true;
+    }
 }
