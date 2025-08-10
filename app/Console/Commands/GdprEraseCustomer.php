@@ -27,3 +27,4 @@ class GdprEraseCustomer extends Command
 }
 
 
+

@@ -23,3 +23,4 @@ class Consent extends Model
 
 
 
+

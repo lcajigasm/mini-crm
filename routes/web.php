@@ -12,6 +12,7 @@ use App\Http\Controllers\CRM\MessagingController;
 use App\Http\Controllers\CRM\CallsController;
 use App\Http\Controllers\CRM\IntegrationsController;
 use App\Http\Controllers\CRM\ReportsController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 // Health check (no auth)
 Route::get('/healthz', function () {
@@ -28,6 +29,11 @@ Route::get('/healthz', function () {
         ], 500);
     }
 });
+
+// Auth routes
+Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
+Route::post('/login', [AuthenticatedSessionController::class, 'store']);
+Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
 Route::middleware('auth')->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');

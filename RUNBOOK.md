@@ -1,74 +1,74 @@
-## Runbooks de incidentes
+## Incident runbooks
 
-Estas guías son breves y accionables. Ejecuta comandos desde la raíz del proyecto en el servidor a menos que se indique lo contrario.
+These guides are concise and actionable. Run commands from the project root on the server unless otherwise noted.
 
-### 1) Caída proveedor WhatsApp (Meta Cloud)
-- **Síntomas**: Webhooks fallan, envíos pendientes, alta latencia API.
-- **Comprobar**:
+### 1) WhatsApp provider outage (Meta Cloud)
+- Symptoms: failing webhooks, pending sends, high API latency.
+- Check:
   - `tail -n 200 storage/logs/laravel.log | grep -i whatsapp | tail -n 50`
-  - Cola: `php artisan queue:failed` y `php artisan queue:work --once`
-  - Estado proveedor: página de status del proveedor.
-- **Degradar/aislar**:
-  - Desactivar envíos salientes: `php artisan down --render="errors/maintenance"` si impacto global o deshabilita feature flag si existe.
-  - Reintentos diferidos: pausar workers `supervisorctl stop queue:*` (si aplica).
-- **Reintentar/recuperar**:
-  - Reprocesar webhooks almacenados: `php artisan mini:replay-webhooks whatsapp` (si existe) o re-disparar jobs `php artisan queue:retry all`.
-  - Revisar `storage/logs/laravel.log` y métricas de éxito.
+  - Queue: `php artisan queue:failed` and `php artisan queue:work --once`
+  - Provider status page.
+- Degrade/isolate:
+  - Disable outgoing sends: `php artisan down --render="errors/maintenance"` for global impact or disable the feature flag if present.
+  - Delay retries: pause workers `supervisorctl stop queue:*` (if applicable).
+- Retry/recover:
+  - Reprocess stored webhooks: `php artisan mini:replay-webhooks whatsapp` (if present) or re-dispatch jobs `php artisan queue:retry all`.
+  - Review `storage/logs/laravel.log` and success metrics.
 
-### 2) Caída proveedor Telefonía (Aircall u otro)
-- **Síntomas**: Entrantes no registradas, CTI fuera de servicio.
-- **Comprobar**:
+### 2) Telephony provider outage (Aircall or others)
+- Symptoms: inbound not recorded, CTI down.
+- Check:
   - `tail -n 200 storage/logs/laravel.log | grep -i call | tail -n 50`
-  - Webhooks recibidos en `webhook_events` (si hay panel/DB).
-- **Degradar**:
-  - Enrutar llamadas a número de respaldo del cliente.
-  - Desactivar UI de llamadas si hay feature flag.
-- **Reintentar**:
-  - Reprocesar eventos: `php artisan queue:retry all` tras restablecimiento.
+  - Webhooks received in `webhook_events` (UI/DB if present).
+- Degrade:
+  - Route calls to a customer backup number.
+  - Disable call UI if feature-flagged.
+- Retry:
+  - Reprocess events: `php artisan queue:retry all` after restoration.
 
-### 3) Caída HubSpot / CRM externo
-- **Síntomas**: Sync fallido, API 5xx, timeouts.
-- **Comprobar**:
+### 3) HubSpot / external CRM outage
+- Symptoms: failed sync, API 5xx, timeouts.
+- Check:
   - `tail -n 200 storage/logs/laravel.log | grep -i hubspot | tail -n 50`
-  - Estado proveedor.
-- **Degradar**:
-  - Convertir sincronización a diferida (solo encolado) mientras el proveedor está caído.
-  - Deshabilitar integraciones desde Ajustes si procede.
-- **Reintentar**:
-  - Re-disparar sincronización incremental (comando `artisan` si existe) o `queue:retry`.
+  - Provider status page.
+- Degrade:
+  - Switch sync to deferred (enqueue-only) while the provider is down.
+  - Disable integrations from Settings if appropriate.
+- Retry:
+  - Re-trigger incremental sync (artisan command if present) or `queue:retry`.
 
 ### Health checks
 - HTTP: `scripts/health_check.sh https://<host>/healthz`
-- DB rápido: `php -r 'new PDO(getenv("DB_URL")?:"sqlite:database/database.sqlite"); echo "DB OK\n";'`
+- Quick DB: `php -r 'new PDO(getenv("DB_URL")?:"sqlite:database/database.sqlite"); echo "DB OK\n";'`
 
-### Copias de seguridad y rotación de logs
-- Backup manual inmediato: `scripts/backup_db.sh`
-- Rotar logs: `scripts/rotate_logs.sh`
+### Backups and log rotation
+- Manual backup now: `scripts/backup_db.sh`
+- Rotate logs: `scripts/rotate_logs.sh`
 
-### Post-mortem mínimo (24h)
-- Línea temporal, causa raíz (si se conoce), acciones correctivas, due date y owner.
+### Minimal post-mortem (within 24h)
+- Timeline, root cause (if known), corrective actions, due date and owner.
 
-## Runbook: Informes y KPIs
+## Runbook: Reports & KPIs
 
-### Propósito
-Panel de informes con KPIs clave y API JSON para integraciones.
+### Purpose
+Reports dashboard with key KPIs and a JSON API for integrations.
 
 ### KPIs
-- Leads en 24h y 7d
-- Tasa de cita (leads 7d con cita creada 7d / leads 7d)
-- Tasa de asistencia (asistidas / [asistidas + no-show + canceladas], en 7d por fecha de cita)
-- Conversión a venta (leads 7d con tratamiento 7d / leads 7d)
-- No-show (ratio en mismo denominador anterior)
-- Sesiones completadas 6/6 (treatments que alcanzan `sessions_count` con la última sesión asistida en 7d)
+- Leads in last 24h and 7d
+- Appointment rate (leads 7d with appointment 7d / leads 7d)
+- Attendance rate (attended / [attended + no-show + cancelled], measured by appointment date in 7d)
+- Conversion to sale (leads 7d with treatment 7d / leads 7d)
+- No-show ratio (same denominator as above)
+- Completed sessions 6/6 (treatments that reached `sessions_count` with last session attended within 7d)
 
-### Fuentes
-Filtro opcional por `source` del lead: `google`, `meta`, `organic`.
+### Sources
+Optional filter by lead `source`: `google`, `meta`, `organic`.
 
 ### Endpoints
-- UI: `GET /informes` (menú Informes)
-- API JSON: `GET /api/reports/kpis?source=google` (requiere sesión autenticada)
+- UI: Reports menu (see the application navigation)
+- JSON API: `GET /api/reports/kpis?source=google` (requires authenticated session)
 
-Respuesta ejemplo (parcial):
+Example response (partial):
 
 ```json
 {
@@ -82,22 +82,22 @@ Respuesta ejemplo (parcial):
     "no_show_rate_7d": 0.17,
     "sessions_completed_7d": 2
   },
-  "series_7d": [ {"date": "2025-01-01", "leads": 3, ...} ]
+  "series_7d": [ {"date": "2025-01-01", "leads": 3 } ]
 }
 ```
 
-### Operativa
-1) Semillas demo: `php artisan migrate:fresh --seed`
-2) Acceder con `admin@example.com` / `password`
-3) Ver panel: menú Informes
-4) Probar API: abrir botón "API JSON" en la página o `curl -b cookie ... /api/reports/kpis`
+### Operations
+1) Seed demo data: `php artisan migrate:fresh --seed`
+2) Login with `admin@example.com` / `password`
+3) View dashboard: Reports menu
+4) Try the API: use the "JSON API" button on the page or `curl -b cookie ... /api/reports/kpis`
 
-### Mantenimiento
-- Si cambian nombres de `source` en `LeadFactory`, ajustar el filtro de la UI.
-- Consultas están optimizadas con agregaciones y `pluck`/`groupBy`; añadir índices si los datos crecen.
+### Maintenance
+- If lead `source` values change in `LeadFactory`, update the UI filter accordingly.
+- Queries are optimized with aggregations and `pluck`/`groupBy`; add indexes as data grows.
 
-### Despliegue
-- CI ejecuta tests y build (`.github/workflows/ci.yml`).
-- Despliegue mínimo: `bash scripts/deploy.sh /var/www/mini-crm php`.
+### Deployment
+- CI runs tests and build (`.github/workflows/ci.yml`).
+- Minimal deploy: `bash scripts/deploy.sh /var/www/mini-crm php`.
 
 
