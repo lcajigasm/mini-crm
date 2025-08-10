@@ -35,3 +35,4 @@ class Treatment extends Model
 }
 
 
+

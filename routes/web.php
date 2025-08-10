@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\CRM\DashboardController;
 use App\Http\Controllers\CRM\ContactsController;
 use App\Http\Controllers\CRM\DealsController;
@@ -11,6 +12,22 @@ use App\Http\Controllers\CRM\MessagingController;
 use App\Http\Controllers\CRM\CallsController;
 use App\Http\Controllers\CRM\IntegrationsController;
 use App\Http\Controllers\CRM\ReportsController;
+
+// Health check (no auth)
+Route::get('/healthz', function () {
+    try {
+        DB::select('select 1');
+        return response()->json([
+            'status' => 'ok',
+            'time' => now()->toISOString(),
+        ]);
+    } catch (Throwable $e) {
+        return response()->json([
+            'status' => 'error',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
@@ -24,6 +41,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/agenda/{appointment}/attend', [AppointmentsController::class, 'attend'])->name('appointments.attend');
         Route::post('/agenda/{appointment}/no-show', [AppointmentsController::class, 'noShow'])->name('appointments.no_show');
         Route::get('/clientes', [ContactsController::class, 'index'])->name('contacts.index');
+        Route::get('/clientes/{customer}/export', [ContactsController::class, 'export'])->name('contacts.export');
+        Route::post('/clientes/{customer}/erase', [ContactsController::class, 'erase'])->name('contacts.erase');
         Route::get('/llamadas', [CallsController::class, 'index'])->name('calls.index');
     });
 
@@ -42,5 +61,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/ajustes', [SettingsController::class, 'index'])->name('settings.index');
         // Ajustes específicos
         Route::get('/settings/feature-flags', [SettingsController::class, 'featureFlags'])->name('settings.feature-flags');
+        Route::get('/settings/audit', [SettingsController::class, 'audit'])->name('settings.audit');
+        Route::get('/settings/security', [SettingsController::class, 'securityChecklist'])->name('settings.security');
     });
 });

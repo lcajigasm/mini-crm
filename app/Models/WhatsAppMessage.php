@@ -10,6 +10,8 @@ class WhatsAppMessage extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $table = 'whatsapp_messages';
+
     protected $fillable = [
         'customer_id','lead_id','user_id','phone','direction','message','external_id','status','sent_at',
     ];
@@ -18,5 +20,6 @@ class WhatsAppMessage extends Model
         'sent_at' => 'datetime',
     ];
 }
+
 
 
